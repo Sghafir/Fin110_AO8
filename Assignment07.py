@@ -25,7 +25,7 @@ students: list = []  # a table of student data
 menu_choice: str  # Hold the choice made by the user.
 
 
-# TODO Create a Person Class
+# TODO Create a Person Class (Done)
 # TODO Add first_name and last_name properties to the constructor (Done)
 # TODO Create a getter and setter for the first_name property (Done)
 # TODO Create a getter and setter for the last_name property (Done)
@@ -46,7 +46,7 @@ class FileProcessor:
     A collection of processing layer functions that work with Json files
 
     ChangeLog: (Who, When, What)
-    RRoot,1.1.2030,Created Class
+    Sghafir,11.27.2023,Created Class
     """
     @staticmethod
     def read_data_from_file(file_name: str, student_data: list):
@@ -211,6 +211,76 @@ class IO:
         except Exception as e:
             IO.output_error_messages(message="Error: There was a problem with your entered data.", error=e)
         return student_data
+
+class person:
+    """
+      A collection of presentation layer functions that manage user input and output
+
+      ChangeLog: (Who, When, What)
+      RRoot,1.1.2030,Created Class
+      RRoot,1.2.2030,Added menu output and input functions
+      RRoot,1.3.2030,Added a function to display the data
+      RRoot,1.4.2030,Added a function to display custom error messages
+      """
+
+    def __init__(self, first_name: str = '', last_name: str = '', course_name: str = ''):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.course_name = course_name
+
+    def __init__(self, first_name: str = '', last_name: str = ''):
+        self.first_name = first_name
+        self.last_name = last_name
+'''
+    @property # getter
+    def first_name(self):
+        return self.__first_name.title() # formatting name
+    @first_name.setter # setter
+    def first_name(self, value: str):
+        if value.isalpha() or value == "": # data validation to ensure value is non numeric
+            self.__first_name = value
+        else:
+            raise ValueError("The last name should not contain numbers.")
+
+    @property
+    def last_name(self):
+        return self.__last_name.title()   # formatting name
+    @last_name.setter
+    def last_name(self, value: str):
+        if value.isalpha() or value == "": # data validation to ensure value is non numeric
+            self.__last_name = value
+        else:
+            raise ValueError("The last name should not contain numbers.")
+    '''
+    def __str__(self):
+        return f'{self.first_name},{self.last_name}'
+
+
+class student(person):
+    """
+      A collection of presentation layer functions that manage user input and output
+
+      ChangeLog: (Who, When, What)
+      RRoot,1.1.2030,Created Class
+      RRoot,1.2.2030,Added menu output and input functions
+      RRoot,1.3.2030,Added a function to display the data
+      RRoot,1.4.2030,Added a function to display custom error messages
+      """
+    super().__init__(first_name=first_name, last_name=last_name)
+    self.course_name = course_name
+
+    def __str__(self):
+        return f'{self.first_name},{self.last_name},{self.course_name}'
+
+
+
+
+
+
+
+
+
+
 
 
 # Start of main body
