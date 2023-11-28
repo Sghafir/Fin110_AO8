@@ -39,6 +39,75 @@ menu_choice: str  # Hold the choice made by the user.
 # TODO Override the __str__() method to return the Student data (Done)
 
 
+class Person:
+    """
+          A collection of methods used to define person
+
+          ChangeLog: (Who, When, What)
+          SGhafir,11.27.2023,Created Class
+          """
+
+    def __init__(self, first_name: str = '', last_name: str = ''):
+        """
+         This function uses the constructor method uses the defined parameters above to create a unique object
+        ChangeLog: (Who, When, What)
+        SGhafir,11.27.2023,Created Class
+        """
+        self.first_name = first_name
+        self.last_name = last_name
+
+    @property # getter used for formatting the object
+    def first_name(self):
+        return self.__first_name.title() # formatting name
+    @first_name.setter # setter used for data validation
+    def first_name(self, value: str):
+        if value.isalpha() or value == "": # data validation to ensure value is non numeric
+            self.__first_name = value
+        else:
+            raise ValueError("The last name should not contain numbers.")
+
+    @property # getter used for formatting the object
+    def last_name(self):
+        return self.__last_name.title()   # formatting name
+    @last_name.setter #setter used for data validation
+    def last_name(self, value: str):
+        if value.isalpha() or value == "": # data validation to ensure value is non numeric
+            self.__last_name = value
+        else:
+            raise ValueError("The last name should not contain numbers.")
+
+    def __str__(self):
+        return f'{self.first_name},{self.last_name}'
+
+
+class Student(Person):
+    """
+      The addition of course_name to the already defined person functions
+      ChangeLog: (Who, When, What)
+      SGhafir,11.27.2023,Created Class
+      """
+    def __init__(self, first_name: str = "", last_name: str = "", course_name: str = ""):
+        """
+        This function uses the constructor method uses the defined parameters above to create a unique object
+        it uses .super to inherit the person objects from the above person class
+        ChangeLog: (Who, When, What)
+        SGhafir,11.27.2023,Created Class
+        """
+        super().__init__(first_name=first_name, last_name=last_name)
+        self.course_name = course_name
+
+    @property # getter used for formatting the object
+    def course_name(self):
+        return self.__course_name
+    @course_name.setter # setter used for data validation
+    def course_name(self, value: str):
+        try:
+            self.__course_name = value
+        except ValueError:
+            raise ValueError("Please only use alpha-numeric characters")
+    def __str__(self):
+        return f"{self.first_name},{self.last_name},{self.course_name}"
+
 
 # Processing --------------------------------------- #
 class FileProcessor:
@@ -48,6 +117,7 @@ class FileProcessor:
     ChangeLog: (Who, When, What)
     Sghafir,11.27.2023,Created Class
     """
+
     @staticmethod
     def read_data_from_file(file_name: str, student_data: list):
         """ This function reads data from a json file and loads it into a list of dictionary rows
@@ -63,38 +133,48 @@ class FileProcessor:
 
         try:
             file = open(file_name, "r")
-            student_data = json.load(file)
+            list_of_dictionary_data = json.load(file)
+            for student in list_of_dictionary_data:
+                student_object: Student = Student(first_name=student["FirstName"],
+                                                  last_name=student["LastName"],
+                                                  course_name=student["CourseName"])
+                student_data.append(student_object)
             file.close()
         except Exception as e:
             IO.output_error_messages(message="Error: There was a problem with reading the file.", error=e)
 
         finally:
-            if file.closed == False:
+            if not file.closed:
                 file.close()
         return student_data
 
     @staticmethod
     def write_data_to_file(file_name: str, student_data: list):
-        """ This function writes data to a json file with data from a list of dictionary rows
+        """ This function writes data to the file and refers to the methods in the student class
 
-        ChangeLog: (Who, When, What)
-        RRoot,1.1.2030,Created function
+               ChangeLog: (Who, When, What)
+               SGhafir,11.27.2023,Created function
 
-        :param file_name: string data with name of file to write to
-        :param student_data: list of dictionary rows to be writen to the file
+               :param file_name: string data with name of file to read from
+               :param student_data: list of dictionary rows to be filled with file data
 
-        :return: None
-        """
-
+               """
         try:
+            list_of_dictionary_data: list = []
+            for student in student_data:
+                student_json: dict \
+                    = {"FirstName": student.first_name, "LastName": student.last_name,
+                       "CourseName": student.course_name}
+                list_of_dictionary_data.append(student_json)
+
             file = open(file_name, "w")
-            json.dump(student_data, file)
+            json.dump(list_of_dictionary_data, file)
+            # json.dump(student_data, file)
             file.close()
-            IO.output_student_and_course_names(student_data=student_data)
+        except TypeError as e:
+            IO.output_error_messages("Please check that the data is a valid JSON format", e)
         except Exception as e:
-            message = "Error: There was a problem with writing to the file.\n"
-            message += "Please check that the file is not open by another program."
-            IO.output_error_messages(message=message,error=e)
+            IO.output_error_messages("There was a non-specific error!", e)
         finally:
             if file.closed == False:
                 file.close()
@@ -155,7 +235,7 @@ class IO:
         choice = "0"
         try:
             choice = input("Enter your menu choice number: ")
-            if choice not in ("1","2","3","4"):  # Note these are strings
+            if choice not in ("1", "2", "3", "4"):  # Note these are strings
                 raise Exception("Please, choose only 1, 2, 3, or 4")
         except Exception as e:
             IO.output_error_messages(e.__str__())  # Not passing e to avoid the technical message
@@ -163,123 +243,32 @@ class IO:
         return choice
 
     @staticmethod
-    def output_student_and_course_names(student_data: list):
-        """ This function displays the student and course names to the user
+    def input_data_to_table(student_data: list):
+        """ This function gets data from the user and adds it to a list of dictionary rows
 
-        ChangeLog: (Who, When, What)
-        RRoot,1.1.2030,Created function
-
-        :param student_data: list of dictionary rows to be displayed
-
-        :return: None
-        """
-
-        print("-" * 50)
-        for student in student_data:
-            print(f'Student {student["FirstName"]} '
-                  f'{student["LastName"]} is enrolled in {student["CourseName"]}')
-        print("-" * 50)
-
-    @staticmethod
-    def input_student_data(student_data: list):
-        """ This function gets the student's first name and last name, with a course name from the user
-
-        ChangeLog: (Who, When, What)
-        RRoot,1.1.2030,Created function
-
-        :param student_data: list of dictionary rows to be filled with input data
-
-        :return: list
+        :param student_data: list of dictionary rows containing our current data
+        :return: list of dictionary rows filled with a new row of data
         """
 
         try:
             student_first_name = input("Enter the student's first name: ")
-            if not student_first_name.isalpha():
-                raise ValueError("The last name should not contain numbers.")
             student_last_name = input("Enter the student's last name: ")
-            if not student_last_name.isalpha():
-                raise ValueError("The last name should not contain numbers.")
-            course_name = input("Please enter the name of the course: ")
-            student = {"FirstName": student_first_name,
-                            "LastName": student_last_name,
-                            "CourseName": course_name}
-            student_data.append(student)
-            print()
-            print(f"You have registered {student_first_name} {student_last_name} for {course_name}.")
+            student_course_name = input("Enter the student's desired course: ")
+
+            new_student = Student(first_name=student_first_name, last_name=student_last_name,
+                                  course_name=student_course_name)
+            student_data.append(new_student)
         except ValueError as e:
-            IO.output_error_messages(message="One of the values was the correct type of data!", error=e)
+            IO.output_error_messages("Only use names without numbers", e)
         except Exception as e:
-            IO.output_error_messages(message="Error: There was a problem with your entered data.", error=e)
+            IO.output_error_messages("There was a non-specific error when adding data!", e)
+
         return student_data
 
-class person:
-    """
-      A collection of presentation layer functions that manage user input and output
-
-      ChangeLog: (Who, When, What)
-      RRoot,1.1.2030,Created Class
-      RRoot,1.2.2030,Added menu output and input functions
-      RRoot,1.3.2030,Added a function to display the data
-      RRoot,1.4.2030,Added a function to display custom error messages
-      """
-
-    def __init__(self, first_name: str = '', last_name: str = '', course_name: str = ''):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.course_name = course_name
-
-    def __init__(self, first_name: str = '', last_name: str = ''):
-        self.first_name = first_name
-        self.last_name = last_name
-'''
-    @property # getter
-    def first_name(self):
-        return self.__first_name.title() # formatting name
-    @first_name.setter # setter
-    def first_name(self, value: str):
-        if value.isalpha() or value == "": # data validation to ensure value is non numeric
-            self.__first_name = value
-        else:
-            raise ValueError("The last name should not contain numbers.")
-
-    @property
-    def last_name(self):
-        return self.__last_name.title()   # formatting name
-    @last_name.setter
-    def last_name(self, value: str):
-        if value.isalpha() or value == "": # data validation to ensure value is non numeric
-            self.__last_name = value
-        else:
-            raise ValueError("The last name should not contain numbers.")
-    '''
-    def __str__(self):
-        return f'{self.first_name},{self.last_name}'
-
-
-class student(person):
-    """
-      A collection of presentation layer functions that manage user input and output
-
-      ChangeLog: (Who, When, What)
-      RRoot,1.1.2030,Created Class
-      RRoot,1.2.2030,Added menu output and input functions
-      RRoot,1.3.2030,Added a function to display the data
-      RRoot,1.4.2030,Added a function to display custom error messages
-      """
-    super().__init__(first_name=first_name, last_name=last_name)
-    self.course_name = course_name
-
-    def __str__(self):
-        return f'{self.first_name},{self.last_name},{self.course_name}'
-
-
-
-
-
-
-
-
-
+    @staticmethod
+    def output_student_and_course_names(student_data: list):
+        for student in student_data:
+            print(student.first_name, student.last_name, student.course_name)
 
 
 
@@ -299,12 +288,12 @@ while (True):
 
     # Input user data
     if menu_choice == "1":  # This will not work if it is an integer!
-        students = IO.input_student_data(student_data=students)
+        students = IO.input_data_to_table(student_data=students)
         continue
 
     # Present the current data
     elif menu_choice == "2":
-        IO.output_student_and_course_names(students)
+        IO.output_student_and_course_names(student_data=students)
         continue
 
     # Save the data to a file
